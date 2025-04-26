@@ -1,8 +1,9 @@
 from networksecurity.compoents.data_ingestion import DataIngestion
 from networksecurity.compoents.data_validation import DataValidation
+from networksecurity.compoents.data_transformation import DataTransformation
 from networksecurity.exception.exception import NetworkSecurityException
 from networksecurity.logging.logger import logging
-from networksecurity.entity.config_entity import DataIngestionConfig,DataValidationConfig
+from networksecurity.entity.config_entity import DataIngestionConfig,DataValidationConfig,DataTransformationConfig
 from networksecurity.entity.config_entity import TrainingPipelineConfig
 import sys
 import traceback
@@ -16,7 +17,6 @@ if __name__ == '__main__':
         
         # Pass the config to DataIngestion constructor
         data_ingestion = DataIngestion(dataingestionconfig)
-        
         logging.info("Initiating data ingestion")
         dataingestionartifact = data_ingestion.initiate_data_ingestion()
         logging.info("Data initiation completed")
@@ -28,6 +28,14 @@ if __name__ == '__main__':
         datavalidationartifact = data_validation.initiate_data_validation()
         logging.info("Data validation completed")
         print(datavalidationartifact)
+
+        data_transformation_config=DataTransformationConfig(trainingpipelineconfig)
+        data_transformation = DataTransformation(datavalidationartifact,data_transformation_config)
+        logging.info("Initiating data Transformation")
+        datatransforamtionartifact = data_validation.initiate_data_transformation()
+        logging.info("Data Transformation completed")
+        print(datatransforamtionartifact)
+
 
 
 
