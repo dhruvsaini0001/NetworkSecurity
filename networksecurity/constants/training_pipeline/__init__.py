@@ -17,6 +17,8 @@ TEST_FILE_NAME:str = "test.csv"
 
 SCHEMA_FILE_PATH = os.path.join("data_schema","schema.yaml")
 
+SAVED_MODEL_DIR = os.path.join("saved_model")
+MODEL_FILE_NAME = "model.pkl"
 
 """
 Data Ingestion related constants start with DATA_INGEATION VAR NAME
