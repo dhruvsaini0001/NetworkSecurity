@@ -8,6 +8,7 @@ import pandas as pd
 import os,sys
 from networksecurity.utils.main_utils.utils import read_yaml_file,write_yaml_file
 
+
 class DataValidation:
     def __init__(self,data_ingestion_artifact:DataIngestionArtifact,
                  data_validation_config:DataValidationConfig):
@@ -36,6 +37,21 @@ class DataValidation:
             return False
         except Exception as e:
             raise NetworkSecurityException(e,sys)
+        
+
+    def validate_numerical_columns(self, dataframe: pd.DataFrame) -> bool:
+        try:
+            expected_numerical_columns = self._schema_config.get("numerical_columns", [])
+            for col in expected_numerical_columns:
+                if not pd.api.types.is_numeric_dtype(dataframe[col]):
+                    logging.info(f"Column {col} is not numerical.")
+                    return False
+            logging.info("All expected numerical columns are correctly numerical.")
+            return True
+        except Exception as e:
+            raise NetworkSecurityException(e, sys)
+
+
         
     def detect_dataset_drift(self,base_df,current_df,threshold=0.05)->bool:
         try:
@@ -83,6 +99,16 @@ class DataValidation:
             status = self.validate_number_of_columns(dataframe=test_dataframe)
             if not status:
                 error_message=f"Test dataframe does not contain all columns.\n"   
+
+            # Validate numerical columns
+            status = self.validate_numerical_columns(dataframe=train_dataframe)
+            if not status:
+                raise Exception("Train dataframe has non-numerical columns where numerical expected.")
+
+            status = self.validate_numerical_columns(dataframe=test_dataframe)
+            if not status:
+                raise Exception("Test dataframe has non-numerical columns where numerical expected.")
+
 
             ## lets check datadrift
             status=self.detect_dataset_drift(base_df=train_dataframe,current_df=test_dataframe)
