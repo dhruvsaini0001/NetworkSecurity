@@ -32,7 +32,7 @@ if __name__ == '__main__':
         data_transformation_config=DataTransformationConfig(trainingpipelineconfig)
         data_transformation = DataTransformation(datavalidationartifact,data_transformation_config)
         logging.info("Initiating data Transformation")
-        datatransforamtionartifact = data_validation.initiate_data_transformation()
+        datatransforamtionartifact = data_transformation.initiate_data_transformation()
         logging.info("Data Transformation completed")
         print(datatransforamtionartifact)
 

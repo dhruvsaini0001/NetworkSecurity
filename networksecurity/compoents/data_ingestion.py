@@ -23,11 +23,11 @@ class DataIngestion:
     def __init__(self,data_ingestion_config:DataIngestionConfig):
         try:
             self.data_ingestion_config=data_ingestion_config
-            self.mongo_client = pymongo.MongoClient(
-                MONGO_DB_URL,
-                socketTimeoutMS=60000,      # Increased timeout
-                connectTimeoutMS=60000
-            )
+            # self.mongo_client = pymongo.MongoClient(
+            #     MONGO_DB_URL,
+            #     socketTimeoutMS=60000,      # Increased timeout
+            #     connectTimeoutMS=60000
+            # )
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
@@ -43,7 +43,7 @@ class DataIngestion:
             logging.info(f"Reading data from database: {database_name}, collection: {collection_name}")
 
             # Using batch_size to avoid timeout
-            df = pd.DataFrame(list(collection.find().limit(10)))
+            # df = pd.DataFrame(list(collection.find().limit(500)))
 
             df=pd.DataFrame(list(collection.find()))
             if "_id" in df.columns.to_list():
