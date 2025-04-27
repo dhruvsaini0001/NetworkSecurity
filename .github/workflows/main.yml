@@ -7,6 +7,10 @@ on:
     paths-ignore:
       - 'README.md'
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   integration:
     name: Continuous Integration
@@ -25,7 +29,7 @@ jobs:
     name: Continuous Delivery
     needs: integration
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
@@ -33,26 +37,27 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq unzip
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # or use ${{ secrets.AWS_REGION }} if you have the region stored in secrets
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr-1  # Changed id to make it unique
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr-1.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
-          # Build a Docker container and push it to ECR
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -61,7 +66,7 @@ jobs:
     needs: build-and-push-ecr-image
     runs-on: self-hosted
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
@@ -72,21 +77,21 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr-2  # Changed id to make it unique in this job
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Pull latest Docker image
+      
+      
+      - name: Pull latest images
         run: |
-          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-
-      - name: Stop and remove previous Docker container (if running)
-        run: |
-          docker ps -q --filter "name=networksecurity" | grep -q . && docker stop networksecurity && docker rm -fv networksecurity
-
+         docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+         
+      #- name: Stop and remove  container if running
+       # run: |
+        # docker ps -q --filter "name=networksecurity" | grep -q . && docker stop networksecurity && docker rm -fv networksecurity
+       
       - name: Run Docker Image to serve users
         run: |
-          docker run -d -p 8080:8080 --ipc="host" --name=networksecurity -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -e 'AWS_REGION=${{ secrets.AWS_REGION }}' ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-
-      - name: Clean up previous images and containers
+         docker run -d -p 8080:8080 --ipc="host" --name=networksecurity -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -e 'AWS_REGION=${{ secrets.AWS_REGION }}'  ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+      - name: Clean previous images and containers
         run: |
-          docker system prune -f
+         docker system prune -f
