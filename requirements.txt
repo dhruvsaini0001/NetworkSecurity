@@ -15,9 +15,3 @@ python-multipart
 # -e .
 
 
-mlflow
-pyaml
-dagshub
-fastapi
-uvicorn
-python-multipart
