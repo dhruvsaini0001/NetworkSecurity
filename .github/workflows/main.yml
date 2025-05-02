@@ -26,32 +26,32 @@ jobs:
       - name: Run unit tests
         run: echo "Running unit tests"
 
-  build-and-push-ecr-image:
-    name: Continuous Delivery
-    needs: integration
-    runs-on: ubuntu-latest
+  # build-and-push-ecr-image:
+  #   name: Continuous Delivery
+  #   needs: integration
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
 
-      - name: Install Utilities
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq unzip
+  #     - name: Install Utilities
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y jq unzip
 
-      - name: Set up Docker Buildx
-        run: |
-          docker buildx create --use
-          docker buildx inspect --bootstrap
-          docker --version  # Check Docker version to confirm
-          docker buildx version  # Check Buildx version
+  #     - name: Set up Docker Buildx
+  #       run: |
+  #         docker buildx create --use
+  #         docker buildx inspect --bootstrap
+  #         docker --version  # Check Docker version to confirm
+  #         docker buildx version  # Check Buildx version
           
-          # Check if Buildx is available
-          if ! docker buildx version; then
-            echo "Buildx is not installed!"
-            exit 1
-          fi
+  #         # Check if Buildx is available
+  #         if ! docker buildx version; then
+  #           echo "Buildx is not installed!"
+  #           exit 1
+  #         fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
