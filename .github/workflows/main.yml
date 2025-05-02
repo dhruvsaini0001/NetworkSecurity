@@ -75,7 +75,7 @@ jobs:
           docker info
           docker buildx ls
 
-          # Build, tag, and push image with verbose output
+          # Build, tag, and push image with verbose output (make sure the context is passed)
           docker buildx build --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --push --progress=plain
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         
