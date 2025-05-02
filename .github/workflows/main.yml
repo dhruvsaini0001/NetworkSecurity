@@ -65,9 +65,20 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
-          # Force usage of buildx
-          docker buildx build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --push
+          # Check Docker version and buildx status
+          docker version
+          docker buildx version || echo "Buildx not found"
+          docker buildx create --use || echo "Failed to create buildx builder"
+          docker buildx inspect --bootstrap || echo "Failed to bootstrap buildx"
+
+          # Debugging: Show Docker info and buildx builder list
+          docker info
+          docker buildx ls
+
+          # Build, tag, and push image with verbose output
+          docker buildx build --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --push --progress=plain
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        
 
   Continuous-Deployment:
     needs: [integration, build-and-push-ecr-image]
