@@ -46,6 +46,12 @@ jobs:
           docker buildx inspect --bootstrap
           docker --version  # Check Docker version to confirm
           docker buildx version  # Check Buildx version
+          
+          # Check if Buildx is available
+          if ! docker buildx version; then
+            echo "Buildx is not installed!"
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -75,10 +81,9 @@ jobs:
           docker info
           docker buildx ls
 
-          # Build, tag, and push image with verbose output (make sure the context is passed)
+          # Build, tag, and push image with verbose output (ensure the context is passed)
           docker buildx build --tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --push --progress=plain
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-        
 
   Continuous-Deployment:
     needs: [integration, build-and-push-ecr-image]
@@ -117,4 +122,4 @@ jobs:
 
       - name: Clean previous images and containers
         run: |
-          docker system prune -f
+          docker system prune -f --volumes
